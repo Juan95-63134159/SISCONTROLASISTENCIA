@@ -1,0 +1,501 @@
+--PARA CREAR EL SISTEMA DE ASISTENCIA 
+composer create-project laravel/laravel example-app
+--composer require laravel/ui
+--php artisan ui bootstrap
+--npm install && npm run dev
+--para poner un sistema de autenticacion en laravel
+--php artisan ui bootstrap --auth
+--npm install
+--npm run dev
+MIGRACIONES
+--php artisan migrate
+modificar el tipo de la base de datos
+en config>database.php
+'engine' => 'InnoDB'
+
+NOTA: EJECUTAR EL COMANDO 'npm run build' para no estar ejecutando npm run dev 
+descaragar plantillas en ADMINLTE para implementarlo:
+https://adminlte.io/
+--LINK:https://github.com/ColorlibHQ/AdminLTE/releases
+
+--COPIAR LOS ARCHIVOS 'dist y build' en la carpeta PUBLIC
+copiar el archivo start
+al archivo creado index.blade.php
+y modificar en web.php la ruta 
+antes:
+Route::get('/', function () {
+    return view('welcome');
+});
+depsues:
+Route::get('/', function () {
+    return view('index');
+});
+
+
+asi se aplicara la plantillas adminlte
+
+DESHABILITAR LA VISTA REGISTER
+Auth::routes(['register'=>false]);
+
+// modificamos para que te mande directo al index
+
+HOMECONTROLLER:
+public function index()
+    {
+        return view('index');
+    }
+
+
+WEB.php:
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+controlller >auth>logincontroller>
+    protected $redirectTo = '/';
+
+
+// PROTEGIENDO LA RUTA DE ACCESO
+Route::get('/', function () { return view('index');})->middleware('auth');
+
+
+ICONOS DE bootstrap:
+https://icons.getbootstrap.com/
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+todos los links para las imagenes deben estar de esta manera {{url('ruta o enlace')}}
+
+
+CREACION DE TABLAS Y MIGRACIONES 
+------------------------------
+php artisan make:migration create_nombretabla_table
+ nombre de la tabla en plural y todo minuscula
+
+
+MODELO 
+-------------------------------
+php artisan make:model Miembro
+nombre en singular y la primera letra en Mayuscula
+
+REVERTIR UNA MIGRACIO:
+----------------------------------
+php artisan migrate:rollback
+
+CONTROLADOR:
+-------------------------------
+php artisan make:Controller MiembroController
+
+CONSULTA PARA HACER A LA BASE DE datos
+---------------------------------------
+$miembros =Miembro::all();
+        return view('miembros.index',['miembros'=>$miembros]);
+
+SEEDER 
+---------------------------------------
+SEMBRADOR DE DATOS:
+---------------------------------------
+php artisan make:seeder MiembroSeeder
+
+AGREGAR AL DATABASESEEDER:
+
+   $this->call([
+            MiembroSeeder::class,
+        ]);
+
+insertar datos:
+EJECUTAR EL COMANDO:
+php artisan db:seed
+
+FACTORY PARA CREAR DATOS: 
+-------------------------------------
+php artisan make:factory MiembroFactory
+CREARA 151 DATOS:
+Miembro::factory()->count(151)->create();
+
+
+CARGAR DATOS DE UNA TABLA A UN VISTA DE LARAVEL:
+-----------------------------------------
+https://datatables.net/
+
+
+boton agregar:
+
+CREAR NUEVO Miembro
+----------------------------------------
+
+VER TODAS LAS RUTAS 
+-----------------------------------
+php artisan route:list
+
+HABILITAR TODAS LAS RUTAS EN LARAVEL WEB.php
+-------------------------------------------------
+Route::resource(miembros\app\http\controlllers\MiembroController);
+
+store para recibir la informacion:
+-------------------------------------------------
+
+VALIDACION DESDE BACKEND
+-------------------------------------------------
+
+$request->validate([
+            'nombre_apellido' => 'required',
+            'direccion' => 'required',
+            'telefono' => 'required',
+            'fecha_nacimiento' => 'required',
+            'email' => 'required',
+            'ministerio' => 'required',
+
+        ]);
+
+
+MOSTRAR ERRORES EN LA PANTALLA:
+---------------------------------------------------
+DE MANERA INDIVIDUAL:
+ @error('nombre_apellido')
+    <small style="color: red"> * Este campo es requerido</small>
+@enderror
+
+DE MANERA ELISTADA:
+@foreach($errors-> all() as $error) 
+    <div class="alert alert-danger">
+            <li>{{$error}}</li>
+    </div>
+        @endforeach
+
+MOSTRAR LOS MENSAJES DE ERROR EN ESPAÑOL:
+-----------------------------------------------------
+INSTALAR EL PAQUETE DE IDIOMAS PARA LARAVEL:
+php artisan lang:publish
+
+pagina web : para encontrar todo en ESPAÑOL
+https://github.com/Laraveles/spanish/tree/master/resources/lang/es
+para esto deberas copiar los mismo archivos de lang>'en' a 'es'
+
+luego ir a config>app.php:
+'locale' => 'es',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Fallback Locale
+    |--------------------------------------------------------------------------
+    |
+    | The fallback locale determines the locale to use when the current one
+    | is not available. You may change the value to correspond to any of
+    | the language folders that are provided through your application.
+    |
+    */
+
+    'fallback_locale' => 'es',
+
+
+VALIDAR LA FOTOGRAFIA:
+if ($request->hasFile('fotografia')) {
+            # code...
+            $miembro->fotografia = $request->file('fotografia')->store('fotografia_miembros','public');
+        }
+
+MOSTRAR DATOS DE UN REGISTRO
+FORMATO PAR ALOS BOTONES 
+ingresar a este link y buscar botton group:
+https://getbootstrap.com/docs/4.6/components/button-group/
+
+bootstrap version 5.2
+iconos:
+https://icons.getbootstrap.com/icons/eye-fill/
+
+
+BUSCAR EL REGISTRO DE LA BASE DE DATOS:
+    public function show($id) {
+        // imprimimos la variable $id
+        // echo $id;
+         // captura de datos
+        $miembro =Miembro::find($id);
+        return view('miembros.show',['miembro'=>$miembro]);
+        // para mostrar los datos en un json
+        // return response()->json($miembro);
+    }
+
+CARGAR DATOS DE LA TABLA DE LA BASE DE DATOS:
+-------------------------------------------------
+para ver la fotografia en show.blade.php
+se debe habilitar el dico publico
+con este COMANDO: php artisan storage:link
+
+
+creamos una carpeta que diga images en public:
+
+EDITAR:
+
+funcion old te retorna los datos antes que se envien a la base de datos:
+value="{{old('direccion')}}
+
+UPDATE:
+value="{{$miembro->nombre_apelllido}}"
+:en todos los inputs 
+
+ELIMINAR DATOS :
+
+UTILIZAR UN FAKE PARA USAR DATOS MAS REALES:
+FAKER: EN LA RUTA: database>factories>MiembroFactory
+ahi se tiene que realizar el FAKER
+
+ahi puedes ver mas detallado de faker:
+https://github.com/fzaninotto/faker
+
+EJEMPLO:
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Miembro>
+ */
+class MiembroFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            //Generar datos aleatoriamente
+            'nombre_apelllido'=> fake()->name,
+            'direccion'=>fake()->address,
+            'telefono'=>random_int(70000000,79999999),
+            'fecha_nacimiento'=> fake()-> date($format = 'Y-m-d', $max = 'now'),
+            'genero'=>'MASCULINO',
+            'email'=> fake()->unique()->safeEmail(),
+            'estado'=>'1',
+            'ministerio'=>'Pastoral',
+            'fotografia'=>'juan.jpg',
+            'fecha_ingreso'=>fake()-> date($format = 'Y-m-d'), 
+        ];
+    }
+}
+
+PARA EJECUTAR:
+php artisan db:seed
+
+final del modulo MIEMBROS...!!!
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+MODULO ministerio:
+comando para crear todo uno:
+controlador :"c",modelo, migracion : "m" , "r": funcion basicas
+php artisan make:model Ministerio -mcr
+
+
+MIGRACIONES
+RUTAS
+VISTAS :index, create, edit, show
+herramienta para el textarea
+https://ckeditor.com/
+
+https://ckeditor.com/ckeditor-5/demo/
+
+para el contador de ministerios de la pagina principal :
+se creara un nuevo controlador:
+php artisan make:controller AdminController
+
+
+--------------------------------------------------------------------
+MODULO USUARIOS:
+--------------------------------------------------------------------
+php artisan migrate:fresh
+
+-borrara todo y volera a migrar
+se modifico el registerController
+y tambien la migracion agregando nuevos campo
+
+-se vuelve a ejecutar nuestro seed para poder agregar nuevos datos
+
+-se creara un controlador para poder manejar a lo USUARIOS:
+php artisan make:controller UserController -r
+
+
+---------------------------------------------------------------------
+ASISTENCIA
+------------------------------------------------------------------------
+CREACION DE UNA TABLA RELACIONADO con LA TABLA MIEMBROS:
+php artisan make:model Asistencia -mcr
+
+pagina para generar un crud: https://packagist.org/packages/ibex/crud-generator
+1.composer require ibex/crud-generator --dev
+2. php artisan vendor:publish --tag=crud
+
+3. php artisan make:crud {table_name}
+ejemplo:
+php artisan make:crud asistencias
+
+-----------------------------------------------------------------------
+REPORTES
+-----------------------------------------------------------------------
+url de la extension: https://github.com/barryvdh/laravel-dompdf
+instalar :
+1.composer require barryvdh/laravel-dompdf
+bootstrap>app.php:
+2.$app->register(\Barryvdh\DomPDF\ServiceProvider::class);
+en el controlador AsistenciaControlller:
+3.use Barryvdh\DomPDF\Facade\Pdf;
+
+poner esto en config >app.php
+ 'aliases' => Facade::defaultAliases()->merge([
+        // 'Example' => App\Facades\Example::class,
+        $app->register(\Barryvdh\DomPDF\ServiceProvider::class),
+    ])->toArray(),
+
+POR RANGOS:
+$fi= $request->fi;
+        $ff= $request->ff;
+        // CONSULTA PARA VER LAS FECHAS DE RANGO A RANGO
+        $asistencias = Asistencia::where('fecha','>=',$fi)->where('fecha','<=',$ff)->get();
+        // PARA CONVERTIR EN PDF
+        $pdf = Pdf::loadView('asistencia.pdf', ['asistencias'=>$asistencias]);
+        return $pdf->stream();
+
+--------------------------------------------------------------------
+MODULO ROLES
+--------------------------------------------------------------------
+herramienta para poder tener control de los usuarios en roles:
+https://spatie.be/
+https://spatie.be/docs/laravel-permission/v6/installation-laravel
+
+1.  composer require spatie/laravel-permission
+2.  agregarlo al config> app.php => Spatie\Permission\PermissionServiceProvider::class,
+3. para ponerlo de manera publica: php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+4. para optimizar: php artisan optimize:clear
+5. para migrar: php artisan migrate
+6. poner el el modelo de usuarios: use HasRoles;
+
+https://spatie.be/docs/laravel-permission/v6/basic-usage/basic-usage:
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
+
+--------------------------------------------------------------------
+Crear un permiso:
+--------------------------------------------------------------------
+creamos un seeder para el manejo de roles y permisos:
+php artisan make:seed RoleSeeder 
+
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+ejecutamos : php artisan migrate:fresh --seeder
+
+ejecutamos los seeder para crear los roles:
+php artisan db:seed
+
+ROLES :
+//El sistema va a tener 2 roles, puedes crear mas:
+        // Administrador
+        $admin = Role::create(['name' => 'admin']);
+        // Secretaria
+        $secretaria = Role::create(['name' => 'secretaria']);
+        // PERMISOS
+        $permission = Permission::create(['name' => 'index'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'reportes'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'pdf'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'pdf_fechas'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'home'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'miembros'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'ministerios'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'usuarios'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'asistencias'])->syncRoles([$admin,$secretaria]);
+
+RUTAS ACTUALIZADAS:
+Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
+// REPORTES
+Route::get('/asistencias/reportes', [AsistenciaController::class, 'reportes'])->name('reportes');
+// PDF
+Route::get('/asistencias/pdf', [AsistenciaController::class, 'pdf'])->name('pdf');
+Route::get('/asistencias/pdf_fechas', [AsistenciaController::class, 'pdf_fechas'])->name('pdf_fechas');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// PARA DESHABILITAR LA VISTA Register poner false
+Auth::routes(['register'=>true]);
+// PARA HABILITAR TODAS LAS RUTAS PARA MODULO MIEMBROS
+Route::resource('/miembros',\App\Http\Controllers\MiembroController::class);
+// PARA HABILITAR TODAS LAS RUTAS PARA MODULO MINISTERIOS
+Route::resource('/ministerios',\App\Http\Controllers\MinisterioController::class);
+
+// PARA HABILITAR TODAS LAS RUTAS PARA MODULO USUARIOS
+Route::resource('/usuarios',\App\Http\Controllers\UserController::class);
+
+// PARA HABILITAR TODAS LAS RUTAS PARA MODULO ASISTENCIAS
+Route::resource('/asistencias',\App\Http\Controllers\AsistenciaController::class);
+
+-----------------------------------------------------------------------------------------------------------
+
+
+// CREACION DE ROLES
+        //El sistema va a tener 2 roles, puedes crear mas:
+        // Administrador
+        $admin = Role::create(['name' => 'admin']);
+        // Secretaria
+        $secretaria = Role::create(['name' => 'secretaria']);
+        // ASIGNAR LAS VISTAS 
+        $permission = Permission::create(['name' => 'index'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'reportes'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'pdf'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'pdf_fechas'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'home'])->syncRoles([$admin,$secretaria]);
+        $permission = Permission::create(['name' => 'miembros'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'ministerios'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'usuarios'])->syncRoles([$admin]);
+        $permission = Permission::create(['name' => 'asistencias'])->syncRoles([$admin,$secretaria]);
+
+        // ASIGNANDO ROLES
+        User::find(1)->assignRole($admin);
+        User::find(2)->assignRole($secretaria);
+
+luego ejecutamos: php artisan db:seed
+
+
+porner esto para restringir el acceso:
+Route::resource('/miembros',\App\Http\Controllers\MiembroController::class)->middleware('can:miembros');
+
+
+
+---------------------------------------------------------------------------------------------
+CREACION NUEVO SEEDER PARA LA CREACION DE USUARIOS POR DEFECTO:
+---------------------------------------------------------------------------------------------
+php artisan make:seed UserSeeder
+  User::create([
+            'name' => 'admin',
+            'email' => 'admin@gmail.com',
+            'email_verified_at' => now(),
+            'password' =>Hash::make('123456789'),
+            'fecha_ingreso' => now(),
+            'estado' => '1',
+            'remember_token' => Str::random(10),
+        ]);
+
+        User::create([
+            'name' => 'maria',
+            'email' => 'maria@gmail.com',
+            'email_verified_at' => now(),
+            'password' =>Hash::make('123456789'),
+            'fecha_ingreso' => now(),
+            'estado' => '1',
+            'remember_token' => Str::random(10),
+        ]);
+
+luego ejecutamos php artisan db:seed
+
+$usuario->name
+Auth::user()->name
+
+{{ Auth::user()->name }}
+
+
+
+
+
+
+
